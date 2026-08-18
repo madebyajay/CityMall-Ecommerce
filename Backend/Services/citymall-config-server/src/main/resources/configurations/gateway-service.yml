@@ -38,3 +38,6 @@ spring:
           uri: lb:http://PAYMENT-SERVICE
           predicates:
             - Path=/api/v1/payments/**
+
+jwt:
+  secret: ${JWT_SECRET}
