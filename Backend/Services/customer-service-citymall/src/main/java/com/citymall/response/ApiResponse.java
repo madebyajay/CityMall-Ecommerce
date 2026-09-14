@@ -10,4 +10,6 @@ public class ApiResponse<T> {
     private String statusCode;
     private boolean success;
     private T data;
+    @Builder.Default
+    private String timestamp = java.time.LocalDateTime.now().toString();
 }
