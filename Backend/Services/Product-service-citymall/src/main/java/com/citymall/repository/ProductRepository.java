@@ -44,6 +44,9 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     // ---------------- Admin / storefront filtering ----------------
     Page<Product> findByActiveTrue(Pageable pageable);
 
+    /** Storefront category browsing — hides admin-disabled products. */
+    Page<Product> findByCategory_IdAndActiveTrue(Integer categoryId, Pageable pageable);
+
     Page<Product> findByCategory_Id(Integer categoryId, Pageable pageable);
 
     Page<Product> findByActive(Boolean active, Pageable pageable);

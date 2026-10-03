@@ -7,6 +7,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -72,6 +73,16 @@ public class GlobalExceptionHandler {
                 .data(null)
                 .build();
         return ResponseEntity.status(403).body(response);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiResponse<?>> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
+        ApiResponse<?> response = ApiResponse.builder()
+                .message("Request method '" + ex.getMethod() + "' is not supported")
+                .success(false)
+                .data(null)
+                .build();
+        return ResponseEntity.status(405).body(response);
     }
 
     @ExceptionHandler(Exception.class)

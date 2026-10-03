@@ -27,12 +27,12 @@ spring:
         spring.json.type.mapping: orderConfirmation:com.citymall.kafka.OrderConfirmation
 
 # Direct service URLs (no gateway / discovery). OpenFeign uses these via `url`.
-# customer-url points at the internal Feign surface (shared-secret, no user JWT).
+# product-url points at the internal stock surface (no user JWT needed).
 application:
   config:
     customer-url: http://localhost:8090/api/v1/internal/users
     payment-url: http://localhost:8060/api/v1/payments
-    product-url: http://localhost:8050/api/v1/products
+    product-url: http://localhost:8050/api/v1/internal/products
 
 app:
   jwt:

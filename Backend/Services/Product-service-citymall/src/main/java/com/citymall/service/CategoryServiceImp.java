@@ -22,17 +22,17 @@ public class CategoryServiceImp implements CategoryService{
     private final CategoryRepository repository;
     private final CategoryMapper mapper;
 
-    @Override
-    public CategoryResponse createCategory(CategoryRequest request) {
-
-        if(repository.existsByNameIgnoreCase(request.name())) {
-            throw new BusinessException("Category already exists");
-        }
-
-        Category category = mapper.toEntity(request);
-        log.info("Creating category: {}", request.name());
-        return mapper.toResponse(repository.save(category));
-    }
+//    @Override
+//    public CategoryResponse createCategory(CategoryRequest request) {
+//
+//        if(repository.existsByNameIgnoreCase(request.name())) {
+//            throw new BusinessException("Category already exists");
+//        }
+//
+//        Category category = mapper.toEntity(request);
+//        log.info("Creating category: {}", request.name());
+//        return mapper.toResponse(repository.save(category));
+//    }
 
     @Override
     public CategoryResponse findCategoryById(Integer id) {
@@ -48,24 +48,24 @@ public class CategoryServiceImp implements CategoryService{
                 .toList();
     }
 
-    @Override
-    @Transactional
-    public CategoryResponse updateCategory(Integer id, CategoryRequest request) {
-        Category category = repository.findById(id).orElseThrow(() -> new ResourceNotFound("Category not found"));
+//    @Override
+//    @Transactional
+//    public CategoryResponse updateCategory(Integer id, CategoryRequest request) {
+//        Category category = repository.findById(id).orElseThrow(() -> new ResourceNotFound("Category not found"));
+//
+//        category.setName(request.name());
+//        category.setDescription(request.description());
+//        return mapper.toResponse(repository.save(category));
+//    }
 
-        category.setName(request.name());
-        category.setDescription(request.description());
-        return mapper.toResponse(repository.save(category));
-    }
-
-    @Override
-    @Transactional
-    public void deleteCategory(Integer id) {
-        Category category = repository.findById(id).orElseThrow(() -> new ResourceNotFound("Category not found"));
-        if(!category.getProducts().isEmpty()) {
-            throw new BusinessException("Cannot delete category. Products exist under it.");
-        }
-        log.info("Deleting category id: {}", id);
-        repository.delete(category);
-    }
+//    @Override
+//    @Transactional
+//    public void deleteCategory(Integer id) {
+//        Category category = repository.findById(id).orElseThrow(() -> new ResourceNotFound("Category not found"));
+//        if(!category.getProducts().isEmpty()) {
+//            throw new BusinessException("Cannot delete category. Products exist under it.");
+//        }
+//        log.info("Deleting category id: {}", id);
+//        repository.delete(category);
+//    }
 }

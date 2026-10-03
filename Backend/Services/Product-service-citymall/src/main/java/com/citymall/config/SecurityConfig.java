@@ -26,8 +26,8 @@ import java.util.Map;
 
 /**
  * Stateless JWT security. Only {@code /api/v1/admin/**} is locked to ADMIN;
- * the public storefront + order-service Feign calls ({@code /purchase},
- * {@code /validate}) stay open so nothing regresses.
+ * the public storefront stays open (browsing without login) and the
+ * order-service Feign surface lives under {@code /api/v1/internal/**}.
  *
  * <p>401/403 JSON shape is byte-identical to customer-service
  * (message/statusCode/success/data/timestamp).
@@ -55,9 +55,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/actuator/**", "/error").permitAll()
+                        // Service-to-service (order-service Feign validate/purchase).
+                        // Reachable only in-cluster/dev; gate behind X-Internal-Secret
+                        // like customer-service if ever exposed publicly.
+                        .requestMatchers("/api/v1/internal/**").permitAll()
                         // Admin surface: ADMIN role only (CUSTOMER JWT -> 403).
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                        // Everything else stays public (storefront + Feign).
+                        // Storefront stays public (browsing without login).
                         .anyRequest().permitAll())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

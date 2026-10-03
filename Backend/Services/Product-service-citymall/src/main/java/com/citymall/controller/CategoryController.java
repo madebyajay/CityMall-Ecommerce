@@ -1,18 +1,21 @@
 package com.citymall.controller;
 
-import com.citymall.dto.CategoryRequest;
 import com.citymall.dto.CategoryResponse;
 import com.citymall.response.ApiResponse;
 import com.citymall.service.CategoryService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Public category browsing — read-only. Writes live in
+ * {@code AdminCategoryController} ({@code /api/v1/admin/categories}).
+ */
+@Slf4j
 @RestController
 @RequestMapping("api/v1/categories")
 @RequiredArgsConstructor
@@ -21,26 +24,12 @@ public class CategoryController {
 
     private final CategoryService service;
 
-    @PostMapping
-    public ResponseEntity<ApiResponse<CategoryResponse>> createCategory(
-            @Valid
-            @RequestBody
-            CategoryRequest request
-    ){
-        CategoryResponse response = service.createCategory(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(
-                ApiResponse.<CategoryResponse>builder()
-                        .success(true)
-                        .message("Category Created Successfully")
-                        .data(response)
-                        .build()
-        );
-    }
-
     @GetMapping
-    public ResponseEntity<ApiResponse<List<CategoryResponse>>> getAllCategory(){
+    public ResponseEntity<ApiResponse<List<CategoryResponse>>> getAllCategory() {
+        log.info("GET /api/v1/categories");
         List<CategoryResponse> allCategory = service.findAllCategories();
         String msg = allCategory.isEmpty() ? "No Category Found" : "Category fetched successfully";
+        log.debug("Returning {} categories", allCategory.size());
         return ResponseEntity.ok(
                 ApiResponse.<List<CategoryResponse>>builder()
                         .message(msg)
@@ -51,39 +40,14 @@ public class CategoryController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<CategoryResponse>> getById(@PathVariable Integer id){
+    public ResponseEntity<ApiResponse<CategoryResponse>> getById(@PathVariable Integer id) {
+        log.info("GET /api/v1/categories/{}", id);
         CategoryResponse response = service.findCategoryById(id);
         return ResponseEntity.ok(
                 ApiResponse.<CategoryResponse>builder()
                         .message("Category fetched successfully")
                         .data(response)
                         .success(true)
-                        .build()
-        );
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteById(@PathVariable("id") Integer id) {
-        service.deleteCategory(id);
-        return ResponseEntity.ok(
-                ApiResponse.<Void>builder()
-                        .success(true)
-                        .message("Category deleted successfully")
-                        .build()
-        );
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<CategoryResponse>> updateCategory(
-            @PathVariable Integer id,
-            @Valid @RequestBody CategoryRequest request
-    ){
-        CategoryResponse response = service.updateCategory(id, request);
-        return ResponseEntity.ok(
-                ApiResponse.<CategoryResponse>builder()
-                        .message("Category updated")
-                        .success(true)
-                        .data(response)
                         .build()
         );
     }

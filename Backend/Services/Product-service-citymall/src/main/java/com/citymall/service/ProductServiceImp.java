@@ -108,35 +108,41 @@ public class ProductServiceImp implements ProductService {
     )
     public ProductResponse findProductById(Integer id) {
 
-//        log.info("Fetching product with id={}", id);
         log.info("Fetching product from DATABASE. ProductId={}", id);
 
         Product product = getProductOrThrow(id);
-        System.out.println(product.getPrice());
 
         return productMapper.mapToProductResponse(product);
     }
 
-    // Fetch paginated products.
+    // Storefront detail — never leaks admin-disabled products.
+    @Override
+    @Transactional(readOnly = true)
+    public ProductResponse findActiveProductById(Integer id) {
+        log.info("Storefront fetching active product. ProductId={}", id);
+        Product product = getProductOrThrow(id);
+        if (Boolean.FALSE.equals(product.getActive())) {
+            log.warn("Storefront blocked disabled product. ProductId={}", id);
+            throw new ResourceNotFound("Product not found with id: " + id);
+        }
+        return productMapper.mapToProductResponse(product);
+    }
+
+    // Storefront listing — active only, optional category filter.
     @Override
     @Transactional(readOnly = true)
     @Cacheable(
             cacheNames = CacheConstants.PRODUCT_LIST_CACHE,
-            key = "'page=' + #page + ':size=' + #size",
+            key = "'cat=' + #categoryId + ':page=' + #page + ':size=' + #size",
             unless = "#result == null"
     )
-    public PageResponse<ProductResponse> findAllProducts(int page, int size) {
-
-        log.info(
-                "Fetching product list from database. Page={}, Size={}",
-                page,
-                size
-        );
-
+    public PageResponse<ProductResponse> findActiveProducts(Integer categoryId, int page, int size) {
+        log.info("Fetching storefront product list. CategoryId={}, Page={}, Size={}",
+                categoryId, page, size);
         Pageable pageable = PageRequest.of(page, size);
-
-        // Storefront hides admin-disabled products.
-        Page<ProductResponse> productPage = productRepository.findByActiveTrue(pageable)
+        Page<ProductResponse> productPage = (categoryId == null
+                ? productRepository.findByActiveTrue(pageable)
+                : productRepository.findByCategory_IdAndActiveTrue(categoryId, pageable))
                 .map(productMapper::mapToProductResponse);
 
         return PageResponse.<ProductResponse>builder()

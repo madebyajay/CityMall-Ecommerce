@@ -6,6 +6,7 @@ import com.citymall.response.ApiResponse;
 import com.citymall.service.AdminCategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,6 +31,7 @@ import java.util.List;
 @RequestMapping("/api/v1/admin/categories")
 @RequiredArgsConstructor
 @Validated
+@Slf4j
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminCategoryController {
 
@@ -38,7 +40,9 @@ public class AdminCategoryController {
     @PostMapping
     public ResponseEntity<ApiResponse<AdminCategoryResponse>> create(
             @Valid @RequestBody AdminCategoryRequest request) {
+        log.info("POST /api/v1/admin/categories name='{}'", request.name());
         AdminCategoryResponse response = service.create(request);
+        log.info("Admin created category id={}", response.id());
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 ApiResponse.<AdminCategoryResponse>builder()
                         .message("Category created successfully")
@@ -51,6 +55,7 @@ public class AdminCategoryController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<AdminCategoryResponse>>> list(
             @RequestParam(required = false) Integer parentId) {
+        log.info("GET /api/v1/admin/categories parentId={}", parentId);
         List<AdminCategoryResponse> response = service.list(parentId);
         String msg = response.isEmpty() ? "No categories found" : "Categories fetched successfully";
         return ResponseEntity.ok(
@@ -63,6 +68,7 @@ public class AdminCategoryController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<AdminCategoryResponse>> getById(@PathVariable Integer id) {
+        log.info("GET /api/v1/admin/categories/{}", id);
         return ResponseEntity.ok(
                 ApiResponse.<AdminCategoryResponse>builder()
                         .message("Category fetched successfully")
@@ -75,6 +81,7 @@ public class AdminCategoryController {
     public ResponseEntity<ApiResponse<AdminCategoryResponse>> update(
             @PathVariable Integer id,
             @Valid @RequestBody AdminCategoryRequest request) {
+        log.info("PUT /api/v1/admin/categories/{} name='{}'", id, request.name());
         return ResponseEntity.ok(
                 ApiResponse.<AdminCategoryResponse>builder()
                         .message("Category updated successfully")
@@ -85,7 +92,9 @@ public class AdminCategoryController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Integer id) {
+        log.warn("DELETE /api/v1/admin/categories/{}", id);
         service.delete(id);
+        log.info("Admin deleted category id={}", id);
         return ResponseEntity.ok(
                 ApiResponse.<Void>builder()
                         .message("Category deleted successfully")
