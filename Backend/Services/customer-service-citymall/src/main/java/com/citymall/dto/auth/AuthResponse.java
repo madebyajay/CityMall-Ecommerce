@@ -7,9 +7,15 @@ public record AuthResponse(
         String refreshToken,
         String tokenType,
         long expiresInMs,
+        /** True when this login kicked another active device session. */
+        boolean forced,
         UserResponse user
 ) {
     public static AuthResponse bearer(String access, String refresh, long expiresInMs, UserResponse user) {
-        return new AuthResponse(access, refresh, "Bearer", expiresInMs, user);
+        return new AuthResponse(access, refresh, "Bearer", expiresInMs, false, user);
+    }
+
+    public static AuthResponse forced(String access, String refresh, long expiresInMs, UserResponse user) {
+        return new AuthResponse(access, refresh, "Bearer", expiresInMs, true, user);
     }
 }

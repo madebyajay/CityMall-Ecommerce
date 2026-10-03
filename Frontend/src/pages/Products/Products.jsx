@@ -4,7 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import Loader from "../../components/Loader/Loader";
 import EmptyState from "../../components/EmptyState/EmptyState";
-import { fetchProducts } from "../../services/productService";
+import { fetchProducts, searchProducts } from "../../services/productService";
 import "./Products.css";
 
 const SORT_OPTIONS = [
@@ -23,11 +23,20 @@ function Products() {
   const query                       = searchParams.get("q") || "";
 
   useEffect(() => {
-    fetchProducts()
-      .then(setProducts)
+    let mounted = true;
+    const loader = query ? searchProducts(query).catch(() => fetchProducts()) : fetchProducts();
+    loader
+      .then((list) => {
+        if (mounted) setProducts(list);
+      })
       .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [query]);
 
   const filtered = useMemo(() => {
     let result = [...products];

@@ -49,6 +49,7 @@ public class RoleService {
     @Transactional
     public RoleResponse update(Long id, RoleRequest req) {
         Role role = findOrThrow(id);
+        assertNotSystemRole(role, "renamed");
         if (req.name() != null && !req.name().isBlank()) {
             String name = req.name().trim().toUpperCase();
             if (!name.equals(role.getName()) && roleRepository.existsByName(name)) {
@@ -63,8 +64,11 @@ public class RoleService {
     @Transactional
     public void setActive(Long id, boolean active) {
         Role role = findOrThrow(id);
-        if (!active && roleRepository.count() <= 1) {
-            throw new BadRequestException("Cannot deactivate the last role");
+        if (!active) {
+            assertNotSystemRole(role, "deactivated");
+            if (roleRepository.count() <= 1) {
+                throw new BadRequestException("Cannot deactivate the last role");
+            }
         }
         role.setActiveStatus(active);
         roleRepository.save(role);
@@ -73,10 +77,14 @@ public class RoleService {
     @Transactional
     public void delete(Long id) {
         Role role = findOrThrow(id);
-        if (List.of("ADMIN", "CUSTOMER", "SELLER").contains(role.getName())) {
-            throw new BadRequestException("System roles cannot be deleted: " + role.getName());
-        }
+        assertNotSystemRole(role, "deleted");
         roleRepository.delete(role);
+    }
+
+    private static void assertNotSystemRole(Role role, String action) {
+        if (List.of("SUPERADMIN", "ADMIN", "CUSTOMER", "SELLER").contains(role.getName())) {
+            throw new BadRequestException("System role cannot be " + action + ": " + role.getName());
+        }
     }
 
     private Role findOrThrow(Long id) {

@@ -29,7 +29,6 @@ import java.time.LocalDateTime;
 
 /**
  * Production-level user table for CityMall user-service (ex customer-service).
- * Inspired by confonet user_details but trimmed for e-commerce:
  * identity + credentials + contact + address + status/audit + role FK.
  */
 @Entity
@@ -80,7 +79,8 @@ public class User implements Serializable {
     @Column(name = "email_id", unique = true, length = 150)
     private String emailId;
 
-    @Column(name = "mobile_number", nullable = false, unique = true)
+    /** Nullable to allow PII scrub on soft-delete (unique constraint ignores nulls). */
+    @Column(name = "mobile_number", unique = true)
     private Long mobileNumber;
 
     // ---------------- Address (flat, FK-ready for master tables later) ----------------

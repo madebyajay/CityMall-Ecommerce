@@ -34,6 +34,11 @@ public class CustomUserDetails implements UserDetails {
         return List.of(new SimpleGrantedAuthority("ROLE_" + roleName.toUpperCase()));
     }
 
+    /** SUPERADMIN bypasses every authorization check (mirrors reference role-18 bypass). */
+    public boolean isSuperAdmin() {
+        return "SUPERADMIN".equalsIgnoreCase(roleName);
+    }
+
     @Override
     public String getPassword() {
         return passwordHash;

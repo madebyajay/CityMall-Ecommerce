@@ -5,5 +5,9 @@ public enum PaymentMethod {
     CREDIT_CARD,
     VISA,
     MASTER_CARD,
-    BITCOIN
+    BITCOIN,
+    // Accepted by order-service checkout — must stay name-compatible
+    // with com.citymall.orderService.entity.PaymentMethod.
+    UPI,
+    WALLET
 }

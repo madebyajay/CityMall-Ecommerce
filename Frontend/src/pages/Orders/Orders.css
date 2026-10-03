@@ -127,3 +127,10 @@
 }
 
 .orders-empty button:hover { background: #e07b00; }
+
+.orders-error {
+  background: #fdecea;
+  color: #c62828;
+  padding: 10px 14px;
+  border-radius: 8px;
+}

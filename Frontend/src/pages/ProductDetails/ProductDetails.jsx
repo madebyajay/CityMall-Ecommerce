@@ -16,12 +16,24 @@ function ProductDetails() {
   const [added, setAdded] = useState(false);
 
   useEffect(() => {
-    setLoading(true);
-    setAdded(false);
+    let mounted = true;
     fetchProductById(id)
-      .then(setProduct)
-      .catch(() => setError("Product not found."))
-      .finally(() => setLoading(false));
+      .then((p) => {
+        if (mounted) {
+          setProduct(p);
+          setAdded(false);
+          setError(null);
+        }
+      })
+      .catch(() => {
+        if (mounted) setError("Product not found.");
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+    return () => {
+      mounted = false;
+    };
   }, [id]);
 
   const handleAddToCart = () => {
@@ -82,6 +94,17 @@ function ProductDetails() {
 
         <hr className="pd-divider" />
 
+        {/* Stock */}
+        {typeof product.availableQuantity === "number" && (
+          <p className="pd-stock" style={{ color: product.availableQuantity > 0 ? "#2e7d32" : "#c62828" }}>
+            {product.availableQuantity > 0
+              ? product.availableQuantity < 10
+                ? `Only ${product.availableQuantity} left in stock`
+                : "In stock"
+              : "Out of stock"}
+          </p>
+        )}
+
         {/* Description */}
         <p className="pd-description">{product.description}</p>
 
@@ -90,7 +113,7 @@ function ProductDetails() {
           <button
             className={`pd-btn pd-btn-cart ${added ? "pd-btn-added" : ""}`}
             onClick={handleAddToCart}
-            disabled={added}
+            disabled={added || product.availableQuantity === 0}
           >
             {added ? "✓ Added to Cart" : "Add to Cart"}
           </button>

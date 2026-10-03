@@ -9,6 +9,12 @@ public record LoginRequest(
         String identifier,
 
         @NotBlank(message = "Password is required")
-        String password
+        String password,
+
+        /**
+         * When another device holds an active session, login is rejected with 409
+         * unless {@code forcedLogin=true} (kicks the other device).
+         */
+        Boolean forcedLogin
 ) {
 }

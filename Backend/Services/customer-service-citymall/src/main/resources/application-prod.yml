@@ -1,0 +1,62 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: customer-service
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/citymall2.0?options=-c%20timezone=UTC
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2s
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:c2VjcmNoLW1lLWNpdHltYWxsLWRldi1zZWNyZXQtMzJieXRlcyE=}
+    access-expiration-ms: 900000
+    refresh-expiration-ms: 604800000
+    max-failed-attempts: 5
+    lock-duration-minutes: 15
+  # Single-device sessions backed by Redis (ported from user-management LOGIN:/REFRESH: keys).
+  session:
+    single-session: true
+    access-ttl-minutes: 240
+    refresh-ttl-days: 7
+  # OTP for reset-password / phone verification (OTP:<key> in Redis, 5 tries, 5 min TTL).
+  otp:
+    length: 6
+    limit: 5
+    expiry-minutes: 5
+  # Internal service-to-service endpoints (/api/v1/internal/**). Order-service sends
+  # this header; leave blank in dev to permit (set INTERNAL_API_SECRET in prod).
+  internal:
+    secret: ${INTERNAL_API_SECRET:}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+info:
+  app:
+    name: Customer Service
+    version: 1.0.0
+    description: CityMall Customer Microservice

@@ -7,11 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 /**
- * Thin facade over {@link AuthService} so that login/logout has its own
- * service + controller surface (as requested). Business rules stay in AuthService.
- *
- * <p>Logout is stateless today (client drops tokens). Next phase (Redis):
- * blacklist access-token jti until expiry + remove refresh-token from allowlist.
+ * Login/logout facade over {@link AuthService} — keeps a dedicated seam for
+ * session handling (now Redis-backed) without duplicating business rules.
  */
 @Slf4j
 @Service
@@ -25,11 +22,6 @@ public class LoginService {
     }
 
     public void logout(String authHeader) {
-        // No-op until Redis blacklist lands. Kept as explicit seam.
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            log.info("Logout requested (token will be blacklisted once Redis lands)");
-        } else {
-            log.info("Logout requested without token");
-        }
+        authService.logout(authHeader);
     }
 }
