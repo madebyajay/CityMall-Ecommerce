@@ -10,9 +10,10 @@ function OrderConfirmation() {
     return null;
   }
 
-  const { orderId, address, payment, grandTotal, totalItems } = state;
+  const { orderNumber, orderId, address, payment, grandTotal, totalItems, status } = state;
+  const displayOrderId = orderNumber || orderId;
 
-  const PAYMENT_LABELS = { cod: "Cash on Delivery", upi: "UPI", card: "Card", nb: "Net Banking" };
+  const PAYMENT_LABELS = { UPI: "UPI", CREDIT_CARD: "Credit / Debit Card", WALLET: "Wallet", MASTER_CARD: "Master Card" };
 
   const estimatedDate = new Date();
   estimatedDate.setDate(estimatedDate.getDate() + 5);
@@ -27,7 +28,8 @@ function OrderConfirmation() {
         <p className="oc-subtitle">Thank you for shopping with CityMall.</p>
 
         <div className="oc-order-id">
-          Order ID: <strong>{orderId}</strong>
+          Order ID: <strong>{displayOrderId}</strong>
+          {status && <span> · {String(status).replace(/_/g, " ")}</span>}
         </div>
 
         <div className="oc-details">

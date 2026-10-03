@@ -135,7 +135,8 @@ public class ProductServiceImp implements ProductService {
 
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<ProductResponse> productPage = productRepository.findAll(pageable)
+        // Storefront hides admin-disabled products.
+        Page<ProductResponse> productPage = productRepository.findByActiveTrue(pageable)
                 .map(productMapper::mapToProductResponse);
 
         return PageResponse.<ProductResponse>builder()
@@ -254,8 +255,9 @@ public class ProductServiceImp implements ProductService {
                 Sort.by("name").ascending()
         );
 
+        // Storefront search hides admin-disabled products.
         Page<ProductResponse> productPage =
-                productRepository.searchProducts(keyword, pageable)
+                productRepository.searchActiveProducts(keyword, pageable)
                         .map(productMapper::mapToProductResponse);
 
         return PageResponse.<ProductResponse>builder()

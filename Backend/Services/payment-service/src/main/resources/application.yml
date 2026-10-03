@@ -1,6 +1,41 @@
+server:
+  port: 8060
+
 spring:
   application:
     name: payment-service
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/citymall2.0?options=-c%20timezone=UTC
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  kafka:
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.type.mapping: paymentConfirmation:com.citymall.payment_service.notification.PaymentNotificationRequest
 
+# Direct service URLs (no gateway / discovery). OpenFeign uses these via `url`.
+application:
   config:
-    import: "optional:configserver:http://localhost:8888"
+    product-url: http://localhost:8050/api/v1/products
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always

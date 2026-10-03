@@ -1,45 +1,45 @@
 services:
 
-  postgres:
-    image: postgres:16
-    container_name: citymall-postgres
-
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-
-    ports:
-      - "5435:5432"
-
-    volumes:
-      - citymall_postgres_data:/var/lib/postgresql/data
-
-    networks:
-      - citymall-network
-
-    restart: unless-stopped
-
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: citymall-pgadmin
-
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@citymall.com
-      PGADMIN_DEFAULT_PASSWORD: admin123
-
-    volumes:
-      - pgadmin:/var/lib/pgadmin
-
-    networks:
-      - citymall-network
-
-    restart: unless-stopped
-
-    ports:
-      - "5050:80"
-
-    depends_on:
-      - postgres
+#  postgres:
+#    image: postgres:16
+#    container_name: citymall-postgres
+#
+#    environment:
+#      POSTGRES_USER: postgres
+#      POSTGRES_PASSWORD: postgres
+#
+#    ports:
+#      - "5435:5432"
+#
+#    volumes:
+#      - citymall_postgres_data:/var/lib/postgresql/data
+#
+#    networks:
+#      - citymall-network
+#
+#    restart: unless-stopped
+#
+#  pgadmin:
+#    image: dpage/pgadmin4
+#    container_name: citymall-pgadmin
+#
+#    environment:
+#      PGADMIN_DEFAULT_EMAIL: admin@citymall.com
+#      PGADMIN_DEFAULT_PASSWORD: admin123
+#
+#    volumes:
+#      - pgadmin:/var/lib/pgadmin
+#
+#    networks:
+#      - citymall-network
+#
+#    restart: unless-stopped
+#
+#    ports:
+#      - "5050:80"
+#
+#    depends_on:
+#      - postgres
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
@@ -117,6 +117,6 @@ networks:
     driver: bridge
 
 volumes:
-  citymall_postgres_data:
-  pgadmin:
+#  citymall_postgres_data:
+#  pgadmin:
   redis_data:

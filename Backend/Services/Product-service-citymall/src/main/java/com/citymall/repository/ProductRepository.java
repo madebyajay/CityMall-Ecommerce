@@ -40,4 +40,58 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     );
 
     List<Product> findAllByIdIn(List<Integer> ids);
+
+    // ---------------- Admin / storefront filtering ----------------
+    Page<Product> findByActiveTrue(Pageable pageable);
+
+    Page<Product> findByCategory_Id(Integer categoryId, Pageable pageable);
+
+    Page<Product> findByActive(Boolean active, Pageable pageable);
+
+    /** Admin list: optional category + status filters in one query. */
+    @Query("""
+    SELECT p
+    FROM Product p
+    JOIN FETCH p.category c
+    WHERE (:categoryId IS NULL OR c.id = :categoryId)
+      AND (:active IS NULL OR p.active = :active)
+    """)
+    Page<Product> findForAdmin(
+            @Param("categoryId") Integer categoryId,
+            @Param("active") Boolean active,
+            Pageable pageable
+    );
+
+    /** Storefront search must hide disabled products. */
+    @Query("""
+    SELECT p
+    FROM Product p
+    JOIN p.category c
+    WHERE p.active = true
+      AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        OR LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%')))
+    """)
+    Page<Product> searchActiveProducts(
+            @Param("keyword") String keyword,
+            Pageable pageable
+    );
+
+    /** Admin keyword search across all statuses + optional filters. */
+    @Query("""
+    SELECT p
+    FROM Product p
+    JOIN FETCH p.category c
+    WHERE (LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        OR LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%')))
+      AND (:categoryId IS NULL OR c.id = :categoryId)
+      AND (:active IS NULL OR p.active = :active)
+    """)
+    Page<Product> searchForAdmin(
+            @Param("keyword") String keyword,
+            @Param("categoryId") Integer categoryId,
+            @Param("active") Boolean active,
+            Pageable pageable
+    );
+
+    long countByAvailableQuantityLessThan(int threshold);
 }

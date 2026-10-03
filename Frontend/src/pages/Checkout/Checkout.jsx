@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
+import { useAuth } from "../../context/AuthContext";
+import { orderApiService, ORDER_PAYMENT_METHODS } from "../../services/orderService";
 import "./Checkout.css";
 
 const DELIVERY_THRESHOLD = 500;
@@ -10,12 +12,15 @@ const STEPS = ["Delivery Address", "Payment"];
 
 function Checkout() {
   const { cartItems, clearCart } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const [step, setStep]     = useState(0);
   const [address, setAddress] = useState({ name: "", phone: "", pincode: "", street: "", city: "", state: "" });
-  const [payment, setPayment] = useState("cod");
+  const [payment, setPayment] = useState("UPI");
   const [addrErrors, setAddrErrors] = useState({});
+  const [placing, setPlacing] = useState(false);
+  const [orderError, setOrderError] = useState("");
 
   const priceTotal    = cartItems.reduce((s, i) => s + i.price * i.quantity, 0);
   const mrpTotal      = cartItems.reduce((s, i) => s + (i.mrp || i.price) * i.quantity, 0);
@@ -47,10 +52,37 @@ function Checkout() {
     setStep(1);
   };
 
-  const handlePlaceOrder = () => {
-    const orderId = "CM" + Date.now().toString().slice(-8);
-    clearCart();
-    navigate("/order-confirmation", { state: { orderId, address, payment, grandTotal, totalItems } });
+  const handlePlaceOrder = async () => {
+    if (placing) return;
+    setOrderError("");
+    if (!user?.userId) {
+      setOrderError("Please sign in again to place the order.");
+      return;
+    }
+    setPlacing(true);
+    try {
+      const order = await orderApiService.createOrder({
+        customerId: user.userId,
+        paymentMethod: payment,
+        products: cartItems,
+      });
+      const totalItems = cartItems.reduce((s, i) => s + i.quantity, 0);
+      clearCart();
+      navigate("/order-confirmation", {
+        state: {
+          orderNumber: order?.orderNumber,
+          status: order?.status,
+          address,
+          payment,
+          grandTotal: Number(order?.amount ?? grandTotal),
+          totalItems,
+        },
+      });
+    } catch (err) {
+      setOrderError(err.message || "Order could not be placed.");
+    } finally {
+      setPlacing(false);
+    }
   };
 
   const handleAddressChange = (field, value) => {
@@ -123,12 +155,7 @@ function Checkout() {
             <h3 className="checkout-section-title">Payment Method</h3>
 
             <div className="payment-options">
-              {[
-                { value: "cod",  label: "Cash on Delivery",   icon: "💵" },
-                { value: "upi",  label: "UPI / GPay / PhonePe", icon: "📲" },
-                { value: "card", label: "Credit / Debit Card",  icon: "💳" },
-                { value: "nb",   label: "Net Banking",          icon: "🏦" },
-              ].map((opt) => (
+              {ORDER_PAYMENT_METHODS.map((opt) => (
                 <label key={opt.value} className={`payment-option ${payment === opt.value ? "selected" : ""}`}>
                   <input
                     type="radio"
@@ -153,10 +180,11 @@ function Checkout() {
 
             <div className="checkout-payment-actions">
               <button className="checkout-back-btn" onClick={() => setStep(0)}>← Back</button>
-              <button className="checkout-place-btn" onClick={handlePlaceOrder}>
-                Place Order · ₹{grandTotal.toLocaleString()}
+              <button className="checkout-place-btn" onClick={handlePlaceOrder} disabled={placing}>
+                {placing ? "Placing order..." : `Place Order · ₹${grandTotal.toLocaleString()}`}
               </button>
             </div>
+            {orderError && <p className="checkout-field-error">{orderError}</p>}
           </div>
         )}
       </div>

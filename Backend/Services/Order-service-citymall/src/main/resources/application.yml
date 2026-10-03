@@ -1,5 +1,48 @@
+server:
+  port: 8070
+
 spring:
   application:
     name: order-service
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/citymall2.0?options=-c%20timezone=UTC
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.type.mapping: orderConfirmation:com.citymall.kafka.OrderConfirmation
+
+# Direct service URLs (no gateway / discovery). OpenFeign uses these via `url`.
+# customer-url points at the internal Feign surface (shared-secret, no user JWT).
+application:
   config:
-    import: optional:configserver:http://localhost:8888
+    customer-url: http://localhost:8090/api/v1/internal/users
+    payment-url: http://localhost:8060/api/v1/payments
+    product-url: http://localhost:8050/api/v1/products
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:c2VjcmNoLW1lLWNpdHltYWxsLWRldi1zZWNyZXQtMzJieXRlcyE=}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always

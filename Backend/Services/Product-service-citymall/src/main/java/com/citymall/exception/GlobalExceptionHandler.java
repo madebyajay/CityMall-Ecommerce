@@ -2,6 +2,8 @@ package com.citymall.exception;
 
 import com.citymall.response.ApiResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -50,6 +52,26 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.status(409).body(response);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiResponse<?>> handleAuthentication(AuthenticationException ex) {
+        ApiResponse<?> response = ApiResponse.builder()
+                .message("Authentication failed: " + ex.getMessage())
+                .success(false)
+                .data(null)
+                .build();
+        return ResponseEntity.status(401).body(response);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<?>> handleAccessDenied(AccessDeniedException ex) {
+        ApiResponse<?> response = ApiResponse.builder()
+                .message("Access denied: " + ex.getMessage())
+                .success(false)
+                .data(null)
+                .build();
+        return ResponseEntity.status(403).body(response);
     }
 
     @ExceptionHandler(Exception.class)

@@ -30,6 +30,11 @@ public class Product {
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal price;
 
+    /** Enable/disable switch (admin). Disabled products are hidden from storefront. */
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean active = true;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
